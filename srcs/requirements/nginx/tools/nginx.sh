@@ -1,0 +1,36 @@
+#!/bin/bash
+set -e
+
+DOMAIN="sudaniel.42.fr"
+SSL_DIR="/etc/nginx/ssl"
+DEFAULT_CONF="/etc/nginx/sites-available/default"
+
+# Create SSL dir & cert
+mkdir -p "$SSL_DIR"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "$SSL_DIR/key.pem" \
+    -out "$SSL_DIR/fullchain.pem" \
+    -subj "/C=DE/ST=Baden-Wuerttemberg/L=Heilbronn/OU=42 Heilbronn Students/CN=$DOMAIN"
+
+# Modify the existing default config in place
+sed -i "s|listen 80 default_server;|listen 443 ssl default_server;|" $DEFAULT_CONF
+sed -i "/listen 443 ssl default_server;/a \
+    ssl_certificate $SSL_DIR/fullchain.pem;\n\
+    ssl_certificate_key $SSL_DIR/key.pem;\n\
+    ssl_protocols TLSv1.3;" $DEFAULT_CONF
+
+# If PHP block is not already there, add it
+if ! grep -q "fastcgi_pass wordpress:9000;" $DEFAULT_CONF; then
+    cat <<EOL >> $DEFAULT_CONF
+
+location ~ \.php\$ {
+    include snippets/fastcgi-php.conf;
+    fastcgi_pass wordpress:9000;
+}
+EOL
+fi
+
+# Test and run
+nginx -t
+exec nginx -g "daemon off;"
+

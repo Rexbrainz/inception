@@ -1,0 +1,74 @@
+volumes:
+  mariadb:
+    name: mariadb
+    driver: local
+    driver_opts:
+      type: bind
+      o: bind
+      device: "/home/sudaniel/data/mariadb"
+  wordpress:
+    name: wordpress
+    driver: local
+    driver_opts:
+      type: bind
+      o: bind
+      device: "/home/sudaniel/data/wordpress"
+ 
+networks:
+  inception:
+    driver: bridge
+
+secrets:
+  mysql_password:
+    file: ./../secrets/credentials.txt
+  wordpress_user_password:
+    file: ./../secrets/wordpress_password.txt
+  wordpress_root_password:
+    file: ./../secrets/wordpress_root_password.txt
+
+services:
+  mariadb:
+    build: ./requirements/mariadb
+    container_name: mariadb
+    restart: on-failure
+    ports:
+      - "3306:3306"
+    env_file:
+      - .env
+    secrets:
+      - mysql_password
+    volumes:
+      - mariadb:/var/lib/mysql
+    networks:
+      - inception
+
+  wordpress:
+    build: ./requirements/wordpress
+    container_name: wordpress
+    restart: on-failure
+    ports:
+      - "9000:9000"
+    env_file:
+      - .env
+    secrets:
+      - mysql_password
+      - wordpress_user_password
+      - wordpress_root_password
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - inception
+
+  nginx:
+    build: ./requirements/nginx
+    container_name: nginx
+    restart: on-failure
+    ports:
+      - "443:443"
+    env_file:
+      - .env
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - inception
+
