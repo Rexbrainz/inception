@@ -3,34 +3,59 @@ set -e
 
 DOMAIN="sudaniel.42.fr"
 SSL_DIR="/etc/nginx/ssl"
-DEFAULT_CONF="/etc/nginx/sites-available/default"
+SITES_DIR="/etc/nginx/sites-available"
 
 # Create SSL dir & cert
 mkdir -p "$SSL_DIR"
+
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout "$SSL_DIR/key.pem" \
-    -out "$SSL_DIR/fullchain.pem" \
-    -subj "/C=DE/ST=Baden-Wuerttemberg/L=Heilbronn/OU=42 Heilbronn Students/CN=$DOMAIN"
+    	-keyout "$SSL_DIR/key.pem" \
+    	-out "$SSL_DIR/fullchain.pem" \
+	-subj "/C=DE/ST=Baden-Wuerttemberg/L=Heilbronn/OU=42 Heilbronn Students/CN=$DOMAIN"
 
-# Modify the existing default config in place
-sed -i "s|listen 80 default_server;|listen 443 ssl default_server;|" $DEFAULT_CONF
-sed -i "/listen 443 ssl default_server;/a \
-    ssl_certificate $SSL_DIR/fullchain.pem;\n\
-    ssl_certificate_key $SSL_DIR/key.pem;\n\
-    ssl_protocols TLSv1.3;" $DEFAULT_CONF
-
-# If PHP block is not already there, add it
-if ! grep -q "fastcgi_pass wordpress:9000;" $DEFAULT_CONF; then
-    cat <<EOL >> $DEFAULT_CONF
-
-location ~ \.php\$ {
-    include snippets/fastcgi-php.conf;
-    fastcgi_pass wordpress:9000;
+cat > "$SITES_DIR/default" <<EOF
+# Catch-all default server for HTTP - reject unknown hosts
+server {
+    listen 80 default_server;
+    server_name _;
+    return 444;
 }
-EOL
-fi
 
-# Test and run
+# Redirect HTTP for your domain to HTTPS
+server {
+    listen 80;
+    server_name $DOMAIN www.$DOMAIN;
+    return 301 https://\$host\$request_uri;
+}
+
+# Catch-all default server for HTTPS - reject unknown hosts
+server {
+    listen 443 ssl default_server;
+    server_name _;
+    ssl_certificate $SSL_DIR/fullchain.pem;
+    ssl_certificate_key $SSL_DIR/key.pem;
+    return 444;
+}
+
+# Actual HTTPS server serving my site
+server {
+    listen 443 ssl;
+    server_name $DOMAIN www.$DOMAIN;
+
+    root /var/www/html;
+    index index.php;
+
+    ssl_certificate $SSL_DIR/fullchain.pem;
+    ssl_certificate_key $SSL_DIR/key.pem;
+    ssl_protocols TLSv1.3;
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass wordpress:9000;
+    }
+}
+EOF
+
+ln -sf "$SITES_DIR/default" "/etc/nginx/sites-enabled/default"
 nginx -t
 exec nginx -g "daemon off;"
-
