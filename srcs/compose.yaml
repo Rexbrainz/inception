@@ -22,15 +22,15 @@ secrets:
   mysql_password:
     file: ./../secrets/credentials.txt
   wordpress_user_password:
-    file: ./../secrets/wordpress_password.txt
+    file: ./../secrets/db_password.txt
   wordpress_root_password:
-    file: ./../secrets/wordpress_root_password.txt
+    file: ./../secrets/db_root_password.txt
 
 services:
   mariadb:
     build: ./requirements/mariadb
     container_name: mariadb
-    restart: on-failure
+    restart: always
     ports:
       - "3306:3306"
     env_file:
@@ -45,7 +45,7 @@ services:
   wordpress:
     build: ./requirements/wordpress
     container_name: wordpress
-    restart: on-failure
+    restart: always
     ports:
       - "9000:9000"
     env_file:
@@ -62,7 +62,7 @@ services:
   nginx:
     build: ./requirements/nginx
     container_name: nginx
-    restart: on-failure
+    restart: always
     ports:
       - "443:443"
     env_file:

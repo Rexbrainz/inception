@@ -7,7 +7,7 @@ MYSQL_PASS=$(cat /run/secrets/mysql_password)
 sed -i 's/^bind-address\s*=.*/bind-address = 0.0.0.0/' /etc/mysql/mariadb.conf.d/50-server.cnf
 
 # Start MariaDB server in the background
-mysqld_safe &
+mysqld_safe --skip-networking &
 
 # Wait until MariaDB is ready
 until mysqladmin ping --silent; do

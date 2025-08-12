@@ -16,7 +16,7 @@ clean:
 	cd srcs && docker compose down --rmi all --volumes
 fclean:
 	@sudo rm -rf $(MARIADB_DIR) $(WORDPRESS_DIR)
-re:
-	fclean up
+re:	fclean up
+
 .PHONY:	up down clean fclean re
 
