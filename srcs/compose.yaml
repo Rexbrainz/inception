@@ -1,17 +1,19 @@
+
 volumes:
   mariadb:
     name: mariadb
     driver: local
     driver_opts:
       type: bind
+      o: bind
       device: "/home/sudaniel/data/mariadb"
   wordpress:
     name: wordpress
     driver: local
     driver_opts:
       type: bind
+      o: bind
       device: "/home/sudaniel/data/wordpress"
- 
 networks:
   inception:
     driver: bridge
@@ -69,4 +71,3 @@ services:
       - wordpress:/var/www/html
     networks:
       - inception
-
