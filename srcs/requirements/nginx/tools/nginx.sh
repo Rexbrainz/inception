@@ -14,30 +14,6 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 	-subj "/C=DE/ST=Baden-Wuerttemberg/L=Heilbronn/OU=42 Heilbronn Students/CN=$DOMAIN"
 
 cat > "$SITES_DIR/default" <<EOF
-# Catch-all default server for HTTP - reject unknown hosts
-# server {
-#     listen 80 default_server;
-#     server_name _;
-#     return 444;
-# }
-#
-# # Redirect HTTP for your domain to HTTPS
-# server {
-#     listen 80;
-#     server_name sudaniel.42.fr;
-#     return 444;
-# }
-#
-# # Catch-all default server for HTTPS - reject unknown hosts
-# server {
-#     listen 443 ssl default_server;
-#     server_name _;
-#     ssl_certificate $SSL_DIR/fullchain.pem;
-#     ssl_certificate_key $SSL_DIR/key.pem;
-#     return 444;
-# }
-#
-# Actual HTTPS server serving my site
 server {
     listen 443 ssl;
     server_name $DOMAIN www.$DOMAIN;

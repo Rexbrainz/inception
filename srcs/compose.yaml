@@ -4,14 +4,12 @@ volumes:
     driver: local
     driver_opts:
       type: bind
-      o: bind
       device: "/home/sudaniel/data/mariadb"
   wordpress:
     name: wordpress
     driver: local
     driver_opts:
       type: bind
-      o: bind
       device: "/home/sudaniel/data/wordpress"
  
 networks:

@@ -13,9 +13,11 @@ down:
 	cd srcs && docker compose -f compose.yaml down
 
 clean:
-	cd srcs && docker compose down --rmi all --volumes
-fclean:
+	cd srcs && docker compose down --rmi all --volumes --remove-orphans
+
+fclean: clean
 	@sudo rm -rf $(MARIADB_DIR) $(WORDPRESS_DIR)
+
 re:	fclean up
 
 .PHONY:	up down clean fclean re
