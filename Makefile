@@ -1,4 +1,4 @@
-##############################################################
+#############################################################
 #							INCEPTION						 #
 ##############################################################						
 MARIADB_DIR = /home/sudaniel/data/mariadb
@@ -17,7 +17,7 @@ clean:
 	cd srcs && docker compose down --rmi all --volumes --remove-orphans
 
 fclean: clean
-	rm -rf $(MARIADB_DIR) $(WORDPRESS_DIR)
+	@sudo rm -rf home/sudaniel/data
 
 re:	fclean up
 
